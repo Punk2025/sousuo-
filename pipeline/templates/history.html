@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>搜索记录 · 搜索管线</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body class="theme-apple">
+  <div class="app">
+    <aside class="side">
+      <p class="logo">SearchPipe</p>
+      <p class="logo-sub">搜索管线 · 搜索记录</p>
+      <nav>
+        <a class="nav" href="/admin/#search">① 搜索</a>
+        <a class="nav" href="/admin/#export">② 表格报表</a>
+        <a class="nav on" href="/admin/history/">搜索记录</a>
+        <a class="nav" href="/admin/#csv">原始 CSV</a>
+        <a class="nav" href="/admin/#later">③ 后续处理</a>
+      </nav>
+      <div class="side-foot">
+        <p>每次新搜索前，上次报表会自动归档到这里。</p>
+        <p class="muted">端口 8878</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <div>
+          <h1>搜索记录</h1>
+          <p class="sub">历史报表归档；主面板只显示本次搜索</p>
+        </div>
+        <div class="top-meta">
+          <a class="btn" href="/admin/">返回控制面板</a>
+          <button type="button" class="btn primary" id="btn-refresh">刷新</button>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="card-h">
+          <h2>归档列表</h2>
+          <span class="tag" id="hist-count">0</span>
+        </div>
+        <p class="help">点一条可查看当时的表格；也可下载 CSV / 打开 HTML 快照。</p>
+        <div class="hist-layout">
+          <ul class="hist-list" id="hist-list"></ul>
+          <div class="hist-detail" id="hist-detail">
+            <p class="muted">左侧选择一条记录</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" hidden></div>
+  <script src="/static/history.js"></script>
+</body>
+</html>

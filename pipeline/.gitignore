@@ -1,0 +1,10 @@
+data/pipeline.db
+data/out.json
+data/browser_profile/
+data/history/
+data/serp_working.csv
+data/报表_*.csv
+data/报表_*.html
+__pycache__/
+.venv/
+.env

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>搜索管线 · 控制面板</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body class="theme-apple">
+  <div class="app">
+    <aside class="side">
+      <div class="brand">
+        <p class="logo">SearchPipe</p>
+        <p class="logo-sub">搜索管线 · 先报表后打标</p>
+      </div>
+      <div class="side-status" id="side-status">
+        <span class="pulse-dot idle" id="side-dot"></span>
+        <div>
+          <strong id="side-state">空闲</strong>
+          <small id="side-hint">等待操作</small>
+        </div>
+      </div>
+      <nav>
+        <a class="nav on" href="#search">① 搜索</a>
+        <a class="nav" href="#export">② 表格报表</a>
+        <a class="nav" href="/admin/history/">搜索记录</a>
+        <a class="nav" href="#csv">原始 CSV</a>
+        <a class="nav" href="#later">③ 后续处理</a>
+      </nav>
+      <div class="side-foot">
+        <p>新搜索会清空当前面板；上次结果自动进「搜索记录」。</p>
+        <p class="muted">本地 · 8878</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <div>
+          <h1>控制面板</h1>
+          <p class="sub">轻快搞定：关键词 → 百度 → <strong>报表</strong> → 可选打标</p>
+        </div>
+        <div class="top-meta">
+          <span class="clock" id="clock">--:--:--</span>
+          <button type="button" class="btn" id="btn-refresh">刷新全部</button>
+        </div>
+      </header>
+
+      <!-- 全局反馈条：始终可见当前在干什么 -->
+      <section class="feedback-strip" id="feedback-strip" data-tone="idle">
+        <div class="fb-left">
+          <span class="status-pill" id="fb-pill">空闲</span>
+          <div class="fb-text">
+            <strong id="fb-title">准备就绪</strong>
+            <span id="fb-msg">输入关键词开始搜索，或导入 txt/csv 批量出报表</span>
+          </div>
+        </div>
+        <div class="fb-right">
+          <span class="fb-meta" id="fb-meta">上次更新：—</span>
+          <a class="btn ghost" href="/admin/history/">搜索记录</a>
+        </div>
+      </section>
+
+      <section class="card progress-card" id="progress-card">
+        <div class="progress-head">
+          <div>
+            <div class="prog-title-row">
+              <strong id="prog-phase">空闲</strong>
+              <span class="live-badge idle" id="live-badge">IDLE</span>
+            </div>
+            <span class="muted" id="prog-detail">等待开始</span>
+          </div>
+          <div class="prog-pct" id="prog-pct">0%</div>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+        </div>
+        <div class="progress-meta">
+          <span id="prog-count">0 / 0</span>
+          <span id="prog-kw" class="muted"></span>
+        </div>
+        <ol class="steps-bar" id="steps-bar">
+          <li data-phase="baidu">① 搜百度</li>
+          <li data-phase="report">② 出报表</li>
+          <li data-phase="done">③ 可导出</li>
+          <li data-phase="tagging">后续·打标</li>
+        </ol>
+      </section>
+
+      <div class="dual-feedback">
+        <section class="card activity-card">
+          <div class="card-h">
+            <h2>操作反馈</h2>
+            <button type="button" class="btn" id="btn-clear-activity">清空</button>
+          </div>
+          <ul class="activity-list" id="activity-list">
+            <li class="act idle"><time>—</time><span>面板已加载，等待操作</span></li>
+          </ul>
+        </section>
+
+        <section class="card error-card" id="error-card" hidden>
+          <div class="card-h">
+            <h2>报错提醒</h2>
+            <button type="button" class="btn" id="btn-clear-errors">清除</button>
+          </div>
+          <p class="help">只显示失败；成功会出现在左侧「操作反馈」。</p>
+          <ul class="error-list" id="error-list"></ul>
+        </section>
+      </div>
+
+      <section class="card search-card" id="search">
+        <div class="card-h">
+          <h2>① 搜索百度 → 生成报表</h2>
+          <span class="tag" id="search-tag">先做这一步</span>
+        </div>
+        <div class="section-banner" id="search-banner" data-tone="info">
+          默认只出报表，不会自动打标。验证码请在弹出的 Chromium 窗口完成。
+        </div>
+        <form class="search-bar" id="search-form">
+          <input id="keyword" type="search" placeholder="单词搜索，例如：加拿大28" autocomplete="off">
+          <button type="submit" class="btn primary" id="btn-auto">单词出报表</button>
+        </form>
+        <label class="block-label">批量关键词（一行一个，也可逗号分隔）
+          <textarea id="keywords-batch" rows="4" spellcheck="false" placeholder="加拿大28&#10;开元棋牌&#10;澳门威尼斯人"></textarea>
+        </label>
+        <div class="import-row">
+          <label class="file-btn btn">
+            导入 txt / csv
+            <input id="kw-file" type="file" accept=".txt,.csv,text/plain,text/csv" hidden>
+          </label>
+          <button type="button" class="btn" id="btn-import-kw" disabled>解析到上方</button>
+          <span class="muted" id="import-hint">CSV 用「关键词」列或第一列；TXT 一行一个</span>
+        </div>
+        <div class="run-row">
+          <button type="button" class="btn primary" id="btn-batch">批量出报表</button>
+          <label>每词抓取条数
+            <input id="serp-limit" type="number" min="5" max="50" value="20">
+          </label>
+          <label class="check">
+            <input id="headless" type="checkbox">
+            无头模式（不推荐）
+          </label>
+        </div>
+        <p class="help" id="search-hint">报表就绪后可导出；需要识别跳转/成人/博彩时再去「后续处理」。</p>
+        <div class="log-head">
+          <span>搜索日志</span>
+          <span class="muted" id="active-kw">当前关键词：未选择</span>
+        </div>
+        <pre class="code log" id="serp-log">等待搜索…</pre>
+        <details class="fallback">
+          <summary>备用：验证码过不去时，手动粘贴网址</summary>
+          <label class="block-label">一行一个网址
+            <textarea id="paste-urls" rows="4" spellcheck="false" placeholder="https://aaa.example/"></textarea>
+          </label>
+          <div class="run-row">
+            <button type="button" class="btn" id="btn-write">写入报表</button>
+            <a class="btn ghost" id="baidu-link" href="#" target="_blank" rel="noopener" hidden>打开百度页</a>
+          </div>
+        </details>
+        <input id="auto-process" type="checkbox" hidden>
+      </section>
+
+      <section class="card" id="export">
+        <div class="card-h">
+          <h2>② 表格报表（主交付）</h2>
+          <div class="filters">
+            <a class="btn primary" id="btn-export-html" href="/api/export.html" target="_blank" rel="noopener">导出可点击 HTML</a>
+            <a class="btn" id="btn-export-csv" href="/api/export.csv">导出 CSV（Excel）</a>
+            <button type="button" class="btn" id="btn-refresh-table">刷新表格</button>
+          </div>
+        </div>
+        <div class="section-banner" id="export-banner" data-tone="idle">
+          尚无报表。完成搜索后这里会显示可导出表格。
+        </div>
+        <div class="stats stats-4" id="stats">
+          <div class="stat"><span>报表条数</span><strong id="s-report">0</strong></div>
+          <div class="stat"><span>已打标·跳转</span><strong id="s-jump">0</strong></div>
+          <div class="stat"><span>已打标·成人</span><strong id="s-adult">0</strong></div>
+          <div class="stat"><span>已打标·博彩</span><strong id="s-gamble">0</strong></div>
+        </div>
+        <!-- 兼容旧 JS -->
+        <strong id="s-total" hidden>0</strong>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>关键词</th>
+                <th>排名</th>
+                <th>名称</th>
+                <th>域名</th>
+                <th>分类</th>
+                <th>入口链接</th>
+                <th>最终链接</th>
+              </tr>
+            </thead>
+            <tbody id="table-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card" id="csv">
+        <div class="card-h">
+          <h2>原始 SERP CSV</h2>
+          <button type="button" class="btn" id="btn-save-csv">保存原始报表</button>
+        </div>
+        <p class="help">机器抓取底稿；上面「表格报表」才是分好列、方便贴进表格的版本。</p>
+        <textarea id="csv-text" rows="5" spellcheck="false"></textarea>
+      </section>
+
+      <section class="card later-card" id="later">
+        <div class="card-h">
+          <h2>③ 后续处理（可选）</h2>
+          <span class="tag" id="job-state">空闲</span>
+        </div>
+        <div class="section-banner" id="tag-banner" data-tone="info">
+          跟跳转、识别疑似成人 / 博彩。失败站点会按标题补标。不建议勾 Crawl4AI。
+        </div>
+        <div class="run-row">
+          <label>只跑前 N 条（0=全部）
+            <input id="limit" type="number" min="0" value="0">
+          </label>
+          <label>并发
+            <input id="tag-workers" type="number" min="1" max="16" value="8">
+          </label>
+          <label class="check">
+            <input id="only-kw" type="checkbox">
+            仅当前关键词
+          </label>
+          <label class="check">
+            <input id="tag-fast" type="checkbox" checked>
+            快速模式
+          </label>
+          <label class="check">
+            <input id="crawl4ai" type="checkbox">
+            优先 Crawl4AI
+          </label>
+          <button type="button" class="btn primary" id="btn-run">开始打标</button>
+        </div>
+        <div class="log-head">
+          <span>打标日志</span>
+          <span class="muted">实时滚动</span>
+        </div>
+        <pre class="code log" id="job-log">尚未打标。先完成上方报表即可导出。</pre>
+
+        <div class="card-h" style="margin-top:1rem">
+          <h2 style="font-size:0.98rem">打标明细</h2>
+          <div class="filters">
+            <input id="q" type="search" placeholder="筛关键词 / URL">
+            <label class="check"><input type="checkbox" id="f-jump"> 仅跳转</label>
+            <label class="check"><input type="checkbox" id="f-adult"> 仅成人</label>
+            <label class="check"><input type="checkbox" id="f-gamble"> 仅博彩</label>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>词</th>
+                <th>#</th>
+                <th>分类</th>
+                <th>域名</th>
+                <th>名称</th>
+                <th>最终链接</th>
+                <th>证据</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+  <!-- 兼容旧 toast id -->
+  <div class="toast" id="toast" hidden></div>
+  <script src="/static/admin.js"></script>
+</body>
+</html>
