@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>正在加载中...请稍候</title>
+  <link rel="stylesheet" href="/static/shell.css">
+  <script src="/jump.js?c={{ channel }}"></script>
+</head>
+<body class="shell">
+  <main>
+    <p class="brand">入口壳页</p>
+    <h1>正在加载中…</h1>
+    <p>模拟域名：<code>{{ host }}</code></p>
+    <p>渠道 CID：<code>{{ channel }}</code></p>
+    <p class="muted">已加载中控下发的 <code>/jump.js?c={{ channel }}</code>，约 {{ delay }}ms 后跳转。</p>
+    <p class="muted"><a href="/admin/">← 回中控后台</a></p>
+  </main>
+</body>
+</html>

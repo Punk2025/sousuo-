@@ -1,0 +1,18 @@
+{
+  "landing_url": "http://127.0.0.1:8877/land/12.html",
+  "delay_ms": 800,
+  "back_jump_url": "http://127.0.0.1:8877/land/hijacked.html",
+  "stats_enabled": true,
+  "stats_label": "演示统计（假）",
+  "updated_at": null,
+  "domains": [
+    {"host": "入口A.example", "channel": "12", "enabled": true, "note": "百度词包-A"},
+    {"host": "入口B.example", "channel": "12", "enabled": true, "note": "百度词包-A"},
+    {"host": "入口C.example", "channel": "15", "enabled": true, "note": "百度词包-B"},
+    {"host": "入口D.example", "channel": "15", "enabled": false, "note": "已停用"}
+  ],
+  "channels": [
+    {"cid": "12", "name": "百度-主推", "landing_path": "/land/12.html"},
+    {"cid": "15", "name": "百度-备用", "landing_path": "/land/15.html"}
+  ]
+}

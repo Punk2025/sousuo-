@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>被劫持页 · 后退失败</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-hijacked">
+  <div class="atmosphere hijacked" aria-hidden="true"></div>
+
+  <main class="stage">
+    <p class="brand">跳转逻辑实验室</p>
+    <h1>你被「后退」带走了</h1>
+    <p class="lede">本页对应真实案例里的 <code>xc1.cbexqkq.cn/88.html</code>。用户以为能返回，实际又进了下一个导流页。</p>
+
+    <div class="panel flash">
+      <div class="panel-head">
+        <span class="dot danger"></span>
+        <span>发生了什么</span>
+      </div>
+      <ol class="steps static">
+        <li class="done">落地页 pushState('#')</li>
+        <li class="done">用户触发 popstate（点后退）</li>
+        <li class="active">强制 location.href → 本页</li>
+      </ol>
+    </div>
+
+    <div class="actions">
+      <a class="btn primary" href="index.html">重新演示全流程</a>
+      <a class="btn ghost" href="landing.html">再回落地页试一次</a>
+    </div>
+  </main>
+</body>
+</html>

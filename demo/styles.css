@@ -1,0 +1,320 @@
+:root {
+  --bg0: #0c1210;
+  --bg1: #13201a;
+  --ink: #e8f2ec;
+  --muted: #9bb5a8;
+  --accent: #3dcf8e;
+  --accent-dim: #1f8a5a;
+  --warn: #f0b429;
+  --danger: #ff6b5a;
+  --panel: rgba(18, 36, 28, 0.72);
+  --line: rgba(61, 207, 142, 0.22);
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --sans: "DM Sans", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--bg0);
+  line-height: 1.55;
+}
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(900px 500px at 12% -10%, rgba(61, 207, 142, 0.22), transparent 55%),
+    radial-gradient(700px 420px at 90% 10%, rgba(45, 120, 90, 0.28), transparent 50%),
+    linear-gradient(160deg, #0a100e 0%, #121c18 45%, #0d1512 100%);
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+.atmosphere.landing {
+  background:
+    radial-gradient(800px 480px at 80% -5%, rgba(240, 180, 41, 0.18), transparent 55%),
+    radial-gradient(640px 400px at 10% 20%, rgba(61, 207, 142, 0.14), transparent 50%),
+    linear-gradient(165deg, #10150f 0%, #1a2214 50%, #0f1410 100%);
+}
+
+.atmosphere.hijacked {
+  background:
+    radial-gradient(760px 460px at 50% -8%, rgba(255, 107, 90, 0.28), transparent 55%),
+    radial-gradient(560px 360px at 15% 80%, rgba(240, 180, 41, 0.12), transparent 50%),
+    linear-gradient(170deg, #160e0d 0%, #1c1211 50%, #100c0b 100%);
+}
+
+@keyframes drift {
+  from { transform: scale(1) translateY(0); }
+  to { transform: scale(1.04) translateY(-1.5%); }
+}
+
+.stage {
+  position: relative;
+  z-index: 1;
+  width: min(720px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 12vh 0 4rem;
+  animation: rise 0.7s ease both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.brand {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.lede {
+  margin: 0 0 1.75rem;
+  max-width: 38rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.lede code,
+.note code,
+.hint code,
+.panel code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  color: var(--accent);
+}
+
+.panel {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  padding: 1rem 1.1rem 1.15rem;
+  margin-bottom: 1.25rem;
+}
+
+.panel.flash {
+  animation: pulse-border 1.6s ease infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(255, 107, 90, 0.35); }
+  50% { border-color: rgba(255, 107, 90, 0.75); }
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 rgba(61, 207, 142, 0.55);
+  animation: ping 1.4s ease infinite;
+}
+
+.dot.warn {
+  background: var(--warn);
+  box-shadow: 0 0 0 0 rgba(240, 180, 41, 0.5);
+}
+
+.dot.danger {
+  background: var(--danger);
+  box-shadow: 0 0 0 0 rgba(255, 107, 90, 0.5);
+}
+
+@keyframes ping {
+  0% { box-shadow: 0 0 0 0 rgba(61, 207, 142, 0.5); }
+  70% { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.steps {
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+  color: var(--muted);
+}
+
+.steps li {
+  margin: 0.35rem 0;
+  transition: color 0.25s ease, transform 0.25s ease;
+}
+
+.steps li.active {
+  color: var(--ink);
+  font-weight: 600;
+  transform: translateX(2px);
+}
+
+.steps li.done {
+  color: var(--accent);
+}
+
+.code {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #c8e6d5;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.6rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn.primary {
+  background: var(--accent);
+  color: #062015;
+}
+
+.btn.primary:hover {
+  background: #54db9d;
+}
+
+.btn.danger {
+  background: var(--danger);
+  color: #2a0b08;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.btn.ghost:hover {
+  border-color: rgba(61, 207, 142, 0.5);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.note,
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.status-card {
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.status-card .label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.status-card code {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  word-break: break-all;
+  color: var(--ink);
+}
+
+.status-card .armed {
+  color: var(--warn);
+}
+
+.status-card .disarmed {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  .stage {
+    padding-top: 8vh;
+  }
+
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}

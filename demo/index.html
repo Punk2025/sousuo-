@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>入口页 · 延迟跳转演示</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-entry">
+  <div class="atmosphere" aria-hidden="true"></div>
+
+  <main class="stage">
+    <p class="brand">跳转逻辑实验室</p>
+    <h1>入口页</h1>
+    <p class="lede">模拟黑产站点：先加载外链脚本逻辑，再 <code>setTimeout</code> 延迟跳转落地页。</p>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span class="dot"></span>
+        <span>正在执行（非 HTTP 301/302）</span>
+      </div>
+      <ol class="steps" id="steps">
+        <li data-step="1" class="active">返回 200 HTML 壳页</li>
+        <li data-step="2">注入统计 / 跳转脚本</li>
+        <li data-step="3">等待 <strong id="countdown">800</strong> ms</li>
+        <li data-step="4">window.location.href → 落地页</li>
+      </ol>
+      <pre class="code" id="code-preview"><code>setTimeout(function () {
+  window.location.href = 'landing.html';
+}, 800);</code></pre>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn primary" id="start">开始演示</button>
+      <a class="btn ghost" href="landing.html">跳过，直接看落地页</a>
+    </div>
+
+    <p class="note">仅本地教学演示，不含真实广告域名。</p>
+  </main>
+
+  <script src="entry.js"></script>
+</body>
+</html>

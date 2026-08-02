@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>落地页 · 后退劫持演示</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-landing">
+  <div class="atmosphere landing" aria-hidden="true"></div>
+
+  <main class="stage">
+    <p class="brand">跳转逻辑实验室</p>
+    <h1>落地页</h1>
+    <p class="lede">页面已用 <code>history.pushState</code> 写入假历史（地址栏会带 <code>#</code>）。点浏览器「后退」会触发劫持。</p>
+
+    <div class="status-grid">
+      <div class="status-card">
+        <span class="label">当前 URL</span>
+        <code id="url-now">—</code>
+      </div>
+      <div class="status-card">
+        <span class="label">劫持状态</span>
+        <strong id="hijack-state" class="armed">已武装</strong>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span class="dot warn"></span>
+        <span>防返回逻辑（实测同源代码结构）</span>
+      </div>
+      <pre class="code"><code>let backJumpUrl = "hijacked.html";
+window.history.pushState('forward', null, '#');
+window.addEventListener('popstate', function () {
+  window.location.href = backJumpUrl;
+}, false);</code></pre>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn danger" id="fake-back">模拟点击「后退」</button>
+      <a class="btn ghost" href="index.html">回入口页</a>
+      <button type="button" class="btn ghost" id="disarm">解除劫持</button>
+    </div>
+
+    <p class="hint" id="hint">也可以直接点浏览器左上角的 ← 后退按钮试一次。</p>
+  </main>
+
+  <script src="landing.js"></script>
+</body>
+</html>

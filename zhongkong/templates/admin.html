@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>跳转中控实验室</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <p class="logo">跳转中控</p>
+      <p class="logo-sub">实验室 · 教学演示</p>
+      <nav>
+        <a href="#jump" class="nav on">统一跳转</a>
+        <a href="#domains" class="nav">入口域名</a>
+        <a href="#channels" class="nav">渠道 CID</a>
+        <a href="#preview" class="nav">脚本预览</a>
+      </nav>
+      <div class="side-foot">
+        <p>改一处配置 → 所有引用 <code>/jump.js</code> 的入口一起变。</p>
+        <p class="muted">非生产系统，仅供理解站群中控结构。</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <div>
+          <h1>站群跳转中控</h1>
+          <p class="sub">模拟「批量入口 + 外链脚本一键下发」</p>
+        </div>
+        <div class="top-meta">
+          <span id="updated">尚未下发</span>
+          <button type="button" class="btn primary" id="btn-publish">一键下发</button>
+        </div>
+      </header>
+
+      <section class="card" id="jump">
+        <div class="card-h">
+          <h2>统一跳转配置</h2>
+          <span class="tag">核心：改这里 = 全站生效</span>
+        </div>
+        <div class="grid-2">
+          <label>
+            <span>落地页 URL</span>
+            <input id="landing_url" type="text" spellcheck="false">
+          </label>
+          <label>
+            <span>延迟（ms）</span>
+            <input id="delay_ms" type="number" min="0" step="100">
+          </label>
+          <label>
+            <span>后退劫持目标</span>
+            <input id="back_jump_url" type="text" spellcheck="false">
+          </label>
+          <label class="check">
+            <span>模拟统计</span>
+            <input id="stats_enabled" type="checkbox">
+            <em>跳转前先打一条 console 统计</em>
+          </label>
+        </div>
+      </section>
+
+      <section class="card" id="domains">
+        <div class="card-h">
+          <h2>入口域名矩阵</h2>
+          <span class="tag" id="domain-count">0 个</span>
+        </div>
+        <p class="help">真实站群里这些域名各自解析到壳页，但都加载同一份 <code>/jump.js</code>。</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>启用</th>
+                <th>入口域名</th>
+                <th>渠道</th>
+                <th>备注</th>
+                <th>试打开</th>
+              </tr>
+            </thead>
+            <tbody id="domain-rows"></tbody>
+          </table>
+        </div>
+        <div class="bulk">
+          <label>
+            <span>批量导入（一行一个：域名,渠道,备注）</span>
+            <textarea id="bulk-text" rows="4" placeholder="foo.example,12,词包A&#10;bar.example,15,词包B"></textarea>
+          </label>
+          <button type="button" class="btn" id="btn-bulk">批量加入</button>
+        </div>
+      </section>
+
+      <section class="card" id="channels">
+        <div class="card-h">
+          <h2>渠道 CID</h2>
+          <span class="tag">落地页按渠道区分结算</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>CID</th><th>名称</th><th>落地路径</th></tr>
+            </thead>
+            <tbody id="channel-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card" id="preview">
+        <div class="card-h">
+          <h2>即将下发的 jump.js</h2>
+          <a class="link" href="/jump.js" target="_blank" rel="noopener">打开 /jump.js</a>
+        </div>
+        <pre class="code" id="script-preview">加载中…</pre>
+        <div class="actions">
+          <a class="btn" href="/entry/入口A.example" target="_blank" rel="noopener">打开示例入口壳页</a>
+          <a class="btn ghost" href="/land/12.html" target="_blank" rel="noopener">直接打开落地页</a>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" hidden></div>
+  <script src="/static/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% if hijacked %}被劫持页{% else %}落地页 {{ page }}{% endif %}</title>
+  <link rel="stylesheet" href="/static/shell.css">
+</head>
+<body class="shell {% if hijacked %}hijacked{% else %}land{% endif %}">
+  <main>
+    <p class="brand">跳转中控实验室</p>
+    {% if hijacked %}
+    <h1>后退被劫持到这里</h1>
+    <p>对应真实链路里的下一站广告页。</p>
+    {% else %}
+    <h1>落地页</h1>
+    <p>当前页：<code>{{ page }}</code></p>
+    <p class="muted">已武装 <code>pushState + popstate</code>。点浏览器后退，或下面按钮。</p>
+    <p>
+      <button type="button" id="fake-back">模拟后退</button>
+      <a href="/admin/">回中控</a>
+    </p>
+    {% endif %}
+    {% if hijacked %}
+    <p><a href="/admin/">回中控</a> · <a href="/entry/入口A.example">再走一遍入口</a></p>
+    {% endif %}
+  </main>
+  {% if not hijacked %}
+  <script>
+    (function () {
+      var backJumpUrl = {{ back_jump_url|tojson }};
+      try {
+        history.pushState('forward', null, '#');
+        addEventListener('popstate', function () {
+          location.href = backJumpUrl;
+        }, false);
+      } catch (e) {}
+      document.getElementById('fake-back').onclick = function () {
+        history.back();
+      };
+    })();
+  </script>
+  {% endif %}
+</body>
+</html>
