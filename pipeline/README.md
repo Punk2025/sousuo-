@@ -9,17 +9,23 @@
 
 ## 后台控制面板（推荐）
 
+**Mac 首次**：双击仓库根目录 **`Mac一键安装.command`**（含 Python 自动安装）。
+
+**日常启动**：桌面 **`SearchPipe.command`** 或 **`启动SearchPipe.command`**。
+
+**终端**：
+
 ```bash
-cd pipeline
-pip install -r requirements.txt flask
-python3 server.py
-# 打开 http://127.0.0.1:8878/admin/
+./start.sh
+# 自动 setup + 打开 http://127.0.0.1:8878/admin/
 ```
 
 面板主流程（**先报表，后其它**）：
 1. 单词/批量搜索百度 → 生成报表  
 2. 在「表格报表」导出 HTML / CSV（名称、域名、分类、可点击链接）  
 3. 需要时再去「后续处理」做跳转/博彩打标  
+
+**Mac 安装与使用** → [../docs/使用教程.md](../docs/使用教程.md)  
 
 默认**不**自动打标。进度条显示「词 2/5」。验证码在弹出的 Chromium 里点一次即可。
 

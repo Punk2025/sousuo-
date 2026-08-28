@@ -40,23 +40,42 @@
 
 ## 快速开始（搜索管线）
 
-### 环境
+### Mac 一条命令安装（从 GitHub）
 
-- macOS / Linux，Python 3.9+
-- 已安装 Playwright Chromium（首次需 `python3 -m playwright install chromium`）
+终端粘贴执行：
 
 ```bash
-cd pipeline
-pip3 install -r requirements.txt
-# 若尚未安装浏览器：
-python3 -m playwright install chromium
-
-chmod +x start.sh
-./start.sh
-# 打开 http://127.0.0.1:8878/admin/
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Punk2025/sousuo-/main/mac/bootstrap.sh)"
 ```
 
-推荐用 `./start.sh` 启动，避免 IDE 注入错误的 `PLAYWRIGHT_BROWSERS_PATH`。
+自动克隆到 `~/SearchPipe` 并完成安装。指定目录：`INSTALL_DIR=~/Desktop/搜索网` 加在前面。
+
+### Mac 一键安装（已有项目文件夹）
+
+1. 把项目文件夹拷到 Mac（或 `git clone`）
+2. **双击 `Mac一键安装.command`**
+3. 按提示操作（首次会装 Homebrew → Python → 依赖 → Chromium，可能要输入 Mac 密码）
+4. 安装完成后桌面会出现 **`SearchPipe.command`**，以后双击它即可启动
+
+控制面板地址：http://127.0.0.1:8878/admin/  
+停止服务：在终端窗口按 `Ctrl+C`。
+
+> 若提示「无法打开」：右键文件 → **打开** → 确认打开。
+
+### 已安装后启动
+
+| 方式 | 说明 |
+|------|------|
+| 桌面 `SearchPipe.command` | 安装时自动创建 |
+| `启动SearchPipe.command` | 项目内启动器（安装后生成） |
+| `一键运行.command` | 同上，快捷入口 |
+
+### 终端启动（macOS / Linux）
+
+```bash
+chmod +x run.sh
+./run.sh
+```
 
 ### 主流程
 
@@ -66,6 +85,8 @@ chmod +x start.sh
 4. **搜索记录**：历史归档，可回看 / 下载 / 删除  
 
 新搜索会清空当前工作区，上次结果自动进「搜索记录」。
+
+**完整图文教程** → [`docs/使用教程.md`](./docs/使用教程.md)
 
 ### 打标说明（规则）
 
@@ -101,10 +122,11 @@ python3 server.py
 
 ### 文档
 
-1. [客户端延迟跳转与历史劫持](./docs/客户端延迟跳转与历史劫持.md)  
-2. [站群跳转中控](./docs/站群跳转中控.md)  
-3. [搜索管线 · SERP 报表与打标](./docs/搜索管线-SERP报表与打标.md)  
-4. [相关开源与资料](./docs/相关开源与资料.md)  
+1. [**使用教程（Mac 一键安装 + 完整流程）**](./docs/使用教程.md)  
+2. [客户端延迟跳转与历史劫持](./docs/客户端延迟跳转与历史劫持.md)  
+3. [站群跳转中控](./docs/站群跳转中控.md)  
+4. [搜索管线 · SERP 报表与打标](./docs/搜索管线-SERP报表与打标.md)  
+5. [相关开源与资料](./docs/相关开源与资料.md)  
 
 ---
 
