@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>心屿 · 内容后台</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body>
+  <div class="app" id="app" data-csrf="{{ csrf }}">
+    <aside class="side">
+      <p class="logo">心屿后台</p>
+      <p class="logo-sub">内容配置 · 本地演示</p>
+      <nav>
+        <a class="nav on" href="#dash" data-panel="dash">总览</a>
+        <a class="nav" href="#site" data-panel="site">站点 / Banner</a>
+        <a class="nav" href="#icons" data-panel="icons">宫格入口</a>
+        <a class="nav" href="#hot" data-panel="hot">热门列表</a>
+        <a class="nav" href="#tags" data-panel="tags">快捷标签</a>
+      </nav>
+      <div class="side-foot">
+        <a class="btn ghost" href="/nav/" target="_blank" rel="noopener">预览 H5</a>
+        <a class="btn ghost" href="/" target="_blank" rel="noopener">内容站</a>
+        <form method="post" action="/admin/logout"><button class="btn" type="submit">退出</button></form>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="top">
+        <div>
+          <h1 id="page-title">总览</h1>
+          <p class="sub">改完点右上角保存；H5 导航会立即读新数据</p>
+        </div>
+        <div class="top-actions">
+          <span class="pill" id="save-state">未改动</span>
+          <button type="button" class="btn primary" id="btn-save">保存全部</button>
+        </div>
+      </header>
+
+      <section class="panel on" id="panel-dash">
+        <div class="stats">
+          <div class="stat"><span>宫格入口</span><strong>{{ stats.icons }}</strong></div>
+          <div class="stat"><span>热门条目</span><strong>{{ stats.hot }}</strong></div>
+          <div class="stat"><span>标签</span><strong>{{ stats.tags }}</strong></div>
+          <div class="stat"><span>数据更新</span><strong class="sm">{{ stats.updated }}</strong></div>
+        </div>
+        <div class="card">
+          <h2>怎么用</h2>
+          <ol class="steps">
+            <li>在左侧改「站点 / Banner、宫格、热门、标签」</li>
+            <li>点右上角 <strong>保存全部</strong></li>
+            <li>打开 <a href="/nav/" target="_blank">/nav/</a> 查看 H5 效果</li>
+          </ol>
+          <p class="muted">本后台只管理展示内容，不含任何爬虫分流 / iframe 跳转配置。</p>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-site">
+        <div class="card form-grid">
+          <label>站点名称 <input id="site-name" type="text"></label>
+          <label>角标 <input id="site-badge" type="text"></label>
+          <label class="full">搜索框占位 <input id="site-search" type="text"></label>
+          <label class="full">提示条文案 <textarea id="site-notice" rows="2"></textarea></label>
+          <label class="full">Banner 标题 <input id="banner-title" type="text"></label>
+          <label class="full">Banner 副文案 <textarea id="banner-sub" rows="2"></textarea></label>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-icons">
+        <div class="card">
+          <div class="card-h">
+            <h2>宫格入口</h2>
+            <button type="button" class="btn" id="btn-add-icon">＋ 添加</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>字</th><th>名称</th><th>链接</th><th>颜色</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="icons-body"></tbody>
+            </table>
+          </div>
+          <p class="muted">颜色类：c1～c8（青绿 / 蓝 / 橙 / 粉 / 紫 …）</p>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-hot">
+        <div class="card">
+          <div class="card-h">
+            <h2>热门列表</h2>
+            <button type="button" class="btn" id="btn-add-hot">＋ 添加</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>标题</th><th>描述</th><th>链接</th><th>置顶色</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="hot-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-tags">
+        <div class="card">
+          <div class="card-h">
+            <h2>快捷标签</h2>
+            <button type="button" class="btn" id="btn-add-tag">＋ 添加</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>标签</th><th>链接</th><th></th></tr>
+              </thead>
+              <tbody id="tags-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" hidden></div>
+  <script>
+    window.__BOOT__ = {{ data | tojson }};
+  </script>
+  <script src="/static/admin.js"></script>
+</body>
+</html>

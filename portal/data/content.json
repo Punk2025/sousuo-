@@ -1,0 +1,35 @@
+{
+  "site": {
+    "name": "心屿导航",
+    "badge": "H5 演示",
+    "search_placeholder": "搜一搜想看的内容",
+    "notice": "说明：链接只进本站栏目，没有远程配置 / 全屏 iframe / 爬虫分流。"
+  },
+  "banner": {
+    "title": "选择入口，继续浏览",
+    "subtitle": "手机竖屏导航页：顶栏搜索 + 宫格入口 + 热门列表。后台可改内容。"
+  },
+  "icons": [
+    {"id": "i1", "label": "首页", "text": "首", "href": "/", "color": "c1"},
+    {"id": "i2", "label": "简介", "text": "简", "href": "/intro/", "color": "c2"},
+    {"id": "i3", "label": "热帖", "text": "热", "href": "/hot-posts/", "color": "c3"},
+    {"id": "i4", "label": "问答", "text": "问", "href": "/user-qa/", "color": "c4"},
+    {"id": "i5", "label": "动态", "text": "讯", "href": "/news-feed/", "color": "c5"},
+    {"id": "i6", "label": "版块", "text": "比", "href": "/section-compare/", "color": "c6"},
+    {"id": "i7", "label": "关于", "text": "关", "href": "/about/", "color": "c7"},
+    {"id": "i8", "label": "专题", "text": "专", "href": "/#", "color": "c8"}
+  ],
+  "hot": [
+    {"id": "h1", "title": "本周热帖精选", "desc": "婚姻 / 恋爱高频讨论", "href": "/hot-posts/", "top": true},
+    {"id": "h2", "title": "问答广场", "desc": "短问短答，快速参考", "href": "/user-qa/", "top": true},
+    {"id": "h3", "title": "最新动态", "desc": "专区与规则更新", "href": "/news-feed/", "top": false},
+    {"id": "h4", "title": "版块怎么选", "desc": "对照表一页看懂", "href": "/section-compare/", "top": false}
+  ],
+  "tags": [
+    {"id": "t1", "label": "恋爱", "href": "/hot-posts/"},
+    {"id": "t2", "label": "婚姻", "href": "/hot-posts/"},
+    {"id": "t3", "label": "异地恋", "href": "/news-feed/"},
+    {"id": "t4", "label": "边界感", "href": "/user-qa/"},
+    {"id": "t5", "label": "发帖建议", "href": "/intro/"}
+  ]
+}

@@ -80,6 +80,7 @@
         <div class="progress-meta">
           <span id="prog-count">0 / 0</span>
           <span id="prog-kw" class="muted"></span>
+          <button type="button" class="btn danger" id="btn-stop" hidden>停止任务</button>
         </div>
         <ol class="steps-bar" id="steps-bar">
           <li data-phase="baidu">① 搜百度</li>
@@ -116,7 +117,7 @@
           <span class="tag" id="search-tag">先做这一步</span>
         </div>
         <div class="section-banner" id="search-banner" data-tone="info">
-          默认只出报表，不会自动打标。验证码请在弹出的 Chromium 窗口完成。
+          默认只出报表；浏览器会后台最小化。遇验证码会自动拉到前台。自动避开爱奇艺 / 腾讯视频等大厂域名。
         </div>
         <form class="search-bar" id="search-form">
           <input id="keyword" type="search" placeholder="单词搜索，例如：加拿大28" autocomplete="off">
@@ -276,6 +277,7 @@
   <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
   <!-- 兼容旧 toast id -->
   <div class="toast" id="toast" hidden></div>
+  <button type="button" class="back-top" id="back-top" hidden aria-label="返回顶部" title="返回顶部">↑</button>
   <script src="/static/admin.js"></script>
 </body>
 </html>

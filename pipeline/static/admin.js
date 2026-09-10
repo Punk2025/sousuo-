@@ -160,10 +160,17 @@
     card.classList.toggle("done", phase === "done" || (phase === "report" && !p.running));
     card.classList.toggle("error", phase === "error");
 
+    const btnStop = $("btn-stop");
+    if (btnStop) {
+      btnStop.hidden = !p.running;
+      btnStop.disabled = !!p.stop;
+      btnStop.textContent = p.stop ? "正在停止…" : "停止任务";
+    }
+
     const badge = $("live-badge");
     if (p.running) {
-      badge.textContent = "LIVE";
-      badge.className = "live-badge run";
+      badge.textContent = p.stop ? "STOP" : "LIVE";
+      badge.className = "live-badge " + (p.stop ? "err" : "run");
     } else if (phase === "error") {
       badge.textContent = "ERR";
       badge.className = "live-badge err";
@@ -261,7 +268,7 @@
         percent: n,
         current: 0,
         total: Number($("serp-limit").value || 20),
-        detail: "浏览器正在访问百度（若有验证码请在弹窗完成）…",
+        detail: "浏览器后台访问百度（遇验证码会自动拉到前台）…",
         keyword,
       });
     }, 900);
@@ -436,13 +443,13 @@
     setSerpLog([
       `关键词：${keyword}`,
       "上次结果已归档到「搜索记录」",
-      "正在启动浏览器自动搜索百度…",
-      "若弹出验证码，请在 Chromium 窗口内完成验证",
+      "正在启动浏览器（后台最小化）…",
+      "若出验证码会自动拉到前台，点完继续",
     ]);
     $("search-hint").textContent = "抓取中，请稍候…";
     toast(`正在搜索「${keyword}」…`, "info");
     pushActivity(`开始单词搜索：${keyword}`, "run");
-    setBanner("search-banner", `正在搜索「${keyword}」，请留意弹出的浏览器窗口`, "run");
+    setBanner("search-banner", `正在搜索「${keyword}」（后台最小化；验证码会弹到前台）`, "run");
     pulseBaiduProgress(keyword);
 
     try {
@@ -495,12 +502,17 @@
         .map((it) => `${it.rank}. ${it.title} — ${it.url}`);
       setSerpLog([`成功写入 ${data.written} 条`, "", ...preview]);
       $("search-hint").textContent = data.note;
-      const okMsg = data.archived
+      const skip = Number(data.skipped_major || 0);
+      let okMsg = data.archived
         ? `报表已生成 ${data.written} 条；上次已进搜索记录`
         : `报表已生成 ${data.written} 条（未自动打标）`;
+      if (skip) okMsg += `；已避开大厂 ${skip} 条`;
       toast(okMsg, "ok");
       pushActivity(okMsg, "ok");
       setBanner("search-banner", okMsg, "ok");
+      if ($("export-banner")) {
+        setBanner("export-banner", `当前报表 ${data.written} 条，可导出 HTML / CSV`, "ok");
+      }
       await refreshAll();
       location.hash = "#export";
     } catch (err) {
@@ -540,7 +552,7 @@
     clearWorkspaceUI("批量新搜索进行中，上次结果已进「搜索记录」");
     setSerpLog(["批量任务已提交…", "上次结果已归档", "将按队列逐个搜索百度", text]);
     $("search-hint").textContent = "批量进行中，看上方进度条「词 x/y」…";
-    setBanner("search-banner", "批量搜索进行中，请关注顶部进度与操作反馈", "run");
+    setBanner("search-banner", "批量搜索进行中（后台最小化；验证码会弹到前台）", "run");
     pushActivity("批量出报表已提交", "run");
 
     try {
@@ -705,6 +717,29 @@
     await startRun();
   };
 
+  $("btn-stop").onclick = async () => {
+    try {
+      const res = await fetch("/api/job/stop", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        toast(data.error || "无法停止", "warn");
+        return;
+      }
+      $("btn-stop").disabled = true;
+      $("btn-stop").textContent = "正在停止…";
+      toast(data.message || "已请求停止", "warn");
+      pushActivity("已请求停止任务（当前词/条结束后退出）", "warn");
+      setFeedback({
+        title: "正在停止",
+        msg: "等当前关键词或打标条目结束后退出",
+        tone: "warn",
+        pill: "停止中",
+      });
+    } catch (err) {
+      toast(String(err), "err");
+    }
+  };
+
   function pollJob() {
     clearInterval(pollTimer);
     pollTimer = setInterval(async () => {
@@ -722,14 +757,16 @@
         await loadCsv();
         await refreshAll();
         const fail = job.last_error || job.phase === "error";
-        const doneMsg =
-          job.phase === "tagging" || job.phase_label?.includes("打标")
+        const stopped = (job.phase_label || "").includes("已停止");
+        const doneMsg = stopped
+          ? "任务已停止"
+          : job.phase === "tagging" || job.phase_label?.includes("打标")
             ? "打标完成"
             : job.mode === "batch"
               ? "报表已生成，可导出"
               : "完成";
-        toast(fail ? "任务失败" : doneMsg, fail ? "err" : "ok");
-        pushActivity(fail ? `任务失败：${job.last_error || job.detail || ""}` : doneMsg, fail ? "err" : "ok");
+        toast(fail ? "任务失败" : doneMsg, fail ? "err" : stopped ? "warn" : "ok");
+        pushActivity(fail ? `任务失败：${job.last_error || job.detail || ""}` : doneMsg, fail ? "err" : stopped ? "warn" : "ok");
         if (!fail && job.log?.length) {
           setSerpLog(job.log.slice(-30));
         }
@@ -757,6 +794,19 @@
     msg: "输入关键词开始搜索，或导入 txt/csv 批量出报表",
     tone: "idle",
   });
+
+  (function initBackTop() {
+    const btn = $("back-top");
+    if (!btn) return;
+    const toggle = () => {
+      btn.hidden = window.scrollY < 320;
+    };
+    window.addEventListener("scroll", toggle, { passive: true });
+    toggle();
+    btn.onclick = () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+  })();
 
   loadCsv()
     .then(refreshAll)

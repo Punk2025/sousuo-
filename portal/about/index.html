@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>关于我们 — 心屿社区</title>
+  <meta name="description" content="关于心屿社区演示站：用途、边界与本地预览方式。">
+  <link rel="canonical" href="/about/">
+  <link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body>
+  <header class="site-header"><div class="wrap"><div class="nav-row">
+    <a class="brand" href="/"><span class="brand-mark">心</span>心屿社区</a>
+    <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false">菜单</button>
+    <nav class="nav-links" data-nav-links>
+      <a href="/">首页</a><a href="/intro/">社区简介</a><a href="/news-feed/">最新动态</a>
+      <a href="/section-compare/">版块对比</a><a href="/hot-posts/">热门帖子</a>
+      <a href="/user-qa/">用户问答</a><a class="on" href="/about/">关于我们</a>
+    </nav>
+  </div></div></header>
+  <main class="wrap">
+    <div class="page-hero">
+      <span class="kicker">说明</span>
+      <h1>关于本演示站</h1>
+      <p>本目录用于对照常见「情感 SEO 门户」的页面骨架，品牌与文案均为原创演示内容。</p>
+    </div>
+    <article class="card essay">
+      <h3>能做什么</h3>
+      <p>静态 HTML + CSS + 少量 JS；可直接放到 nginx / Cloudflare Pages / 任意静态托管。</p>
+      <h3>刻意不做</h3>
+      <p>不接外域广告跳转、不接加密脚本、不做登录发帖。需要真论坛请用 Discourse / 自建社区产品。</p>
+      <div class="callout">本地预览（带后台）：在 portal 目录执行 <code>./start-admin.sh</code>，打开 http://127.0.0.1:8767/admin/ （默认密码 admin123）。H5 导航：http://127.0.0.1:8767/nav/</div>
+    </article>
+  </main>
+  <footer class="site-footer"><div class="wrap"><p class="copy">© 2026 心屿社区 · 演示站</p></div></footer>
+  <script src="/assets/js/site.js"></script>
+</body>
+</html>

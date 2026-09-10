@@ -31,6 +31,7 @@ app = Flask(__name__, template_folder="templates", static_folder="static")
 _job_lock = threading.Lock()
 _job = {
     "running": False,
+    "stop": False,  # 用户请求停止（批量/打标在检查点结束）
     "log": [],
     "last_error": "",
     "errors": [],  # 仅报错：[{time, keyword, message}]
@@ -45,6 +46,23 @@ _job = {
     "kw_total": 0,
     "mode": "single",  # single|batch
 }
+
+
+def _should_stop() -> bool:
+    return bool(_job.get("stop"))
+
+
+def _clear_stop() -> None:
+    _job["stop"] = False
+
+
+def _request_stop() -> bool:
+    """请求停止当前任务；若无任务返回 False。"""
+    with _job_lock:
+        if not _job.get("running"):
+            return False
+        _job["stop"] = True
+    return True
 
 
 def _push_error(message: str, keyword: str = "") -> None:
@@ -88,6 +106,8 @@ def _set_progress(
     with _job_lock:
         if running is not None:
             _job["running"] = running
+            if running:
+                _job["stop"] = False
         if phase is not None:
             _job["phase"] = phase
         if phase_label is not None:
@@ -251,6 +271,20 @@ def _normalize_url(raw: str) -> str:
     if not parsed.netloc:
         return ""
     return u
+
+
+def _filter_major_urls(
+    rows: list[tuple[str, str]],
+) -> tuple[list[tuple[str, str]], int]:
+    """去掉爱奇艺/腾讯等大厂域名，返回 (保留列表, 跳过条数)。"""
+    kept: list[tuple[str, str]] = []
+    skipped = 0
+    for url, title in rows:
+        if baidu_serp.is_major_skip_domain(url):
+            skipped += 1
+            continue
+        kept.append((url, title))
+    return kept, skipped
 
 
 def _write_keyword_csv(
@@ -448,14 +482,19 @@ def api_search_prepare():
         if nu:
             urls.append((nu, parts[1] if len(parts) > 1 else ""))
 
+    urls, skipped = _filter_major_urls(urls)
     written = _write_keyword_csv(keyword, urls, replace=replace) if urls else 0
+    note = "已按手动粘贴写入（备用）。主流程请用「自动抓取」。"
+    if skipped:
+        note += f" 已跳过 {skipped} 条大厂域名。"
     return jsonify(
         {
             "ok": True,
             "keyword": keyword,
             "baidu_url": baidu_url,
             "written": written,
-            "note": "已按手动粘贴写入（备用）。主流程请用「自动抓取」。",
+            "skipped_major": skipped,
+            "note": note,
             "csv": CSV_PATH.read_text(encoding="utf-8") if CSV_PATH.exists() else "",
         }
     )
@@ -500,6 +539,7 @@ def api_baidu_auto():
     try:
         result = scrape_baidu_serp(keyword, limit=limit, headless=headless)
         items = result.get("items") or []
+        skipped_major = int(result.get("skipped_major") or 0)
         _set_progress(
             phase="report",
             phase_label="② 写入报表",
@@ -507,7 +547,10 @@ def api_baidu_auto():
             total=max(len(items), 1),
             percent=35,
             detail=f"抓到 {len(items)} 条，正在写入 CSV…",
-            log_line=f"百度返回 {len(items)} 条",
+            log_line=(
+                f"百度有效 {len(items)} 条"
+                + (f"（已避开大厂 {skipped_major}）" if skipped_major else "")
+            ),
         )
         rows = [(it["url"], it.get("title") or "") for it in items]
         written = (
@@ -518,6 +561,9 @@ def api_baidu_auto():
 
         ok = bool(result.get("ok")) and written > 0
         if ok:
+            detail = f"已写入 {written} 条，可进入打标"
+            if skipped_major:
+                detail += f"（已避开大厂 {skipped_major}）"
             _set_progress(
                 running=False,
                 phase="report",
@@ -525,7 +571,7 @@ def api_baidu_auto():
                 current=written,
                 total=written,
                 percent=40,
-                detail=f"已写入 {written} 条，可进入打标",
+                detail=detail,
                 log_line=f"报表写入完成：{written} 条",
             )
         else:
@@ -540,6 +586,14 @@ def api_baidu_auto():
                 log_line=f"失败：{err}",
             )
 
+        note = (
+            f"已自动抓取并写入 {written} 条"
+            if written
+            else (result.get("error") or "未抓到结果")
+        )
+        if skipped_major:
+            note += f"；已自动避开爱奇艺/腾讯等大厂 {skipped_major} 条"
+
         return jsonify(
             {
                 "ok": ok,
@@ -547,14 +601,11 @@ def api_baidu_auto():
                 "baidu_url": result.get("baidu_url"),
                 "written": written,
                 "items": items,
+                "skipped_major": skipped_major,
                 "captcha": bool(result.get("captcha")),
                 "error": result.get("error") or "",
                 "archived": archived,
-                "note": (
-                    f"已自动抓取并写入 {written} 条"
-                    if written
-                    else (result.get("error") or "未抓到结果")
-                ),
+                "note": note,
                 "csv": CSV_PATH.read_text(encoding="utf-8") if CSV_PATH.exists() else "",
                 "progress": dict(_job),
             }
@@ -630,15 +681,29 @@ def _run_job(
                 ),
             )
 
-        pipeline.process_rows(
+        results = pipeline.process_rows(
             rows,
             prefer_crawl4ai=use_crawl4ai,
             workers=workers,
             fetch_landing=not fast,
             max_scripts=2 if fast else pipeline.MAX_SCRIPT_FETCH,
             on_done=on_done,
+            should_cancel=_should_stop,
         )
         conn.close()
+        if _should_stop():
+            done_n = len(results)
+            _set_progress(
+                running=False,
+                phase="done",
+                phase_label="已停止",
+                current=done_n,
+                total=total,
+                percent=40 + int(done_n / max(total, 1) * 60),
+                detail=f"打标已停止：完成 {done_n}/{total} 条",
+                log_line=f"用户停止打标：{done_n}/{total}",
+            )
+            return
         _set_progress(
             running=False,
             phase="done",
@@ -736,6 +801,16 @@ def _run_batch(
         )
 
         for idx, keyword in enumerate(keywords, 1):
+            if _should_stop():
+                _set_progress(
+                    running=False,
+                    phase="done",
+                    phase_label="已停止",
+                    percent=int((idx - 1) / max(kw_total, 1) * 70),
+                    detail=f"已停止；完成 {idx - 1}/{kw_total} 词，累计写入 {total_written} 条",
+                    log_line=f"用户停止：已完成 {idx - 1}/{kw_total} 词",
+                )
+                return
             # 搜索阶段占总进度 0–70%
             base = int((idx - 1) / kw_total * 70)
             _set_progress(
@@ -752,20 +827,22 @@ def _run_batch(
             )
             result = scrape_baidu_serp(keyword, limit=serp_limit, headless=headless)
             items = result.get("items") or []
+            skipped_major = int(result.get("skipped_major") or 0)
             rows = [(it["url"], it.get("title") or "") for it in items]
             # 追加写入（不清空）
             written = _write_keyword_csv(
                 keyword, rows, replace=True, clear_all=False
             )
             total_written += written
+            skip_note = f"，避开大厂 {skipped_major}" if skipped_major else ""
             _set_progress(
                 phase="report",
                 phase_label=f"② 写报表（词 {idx}/{kw_total}）",
                 current=idx,
                 total=kw_total,
                 percent=int(idx / kw_total * 70),
-                detail=f"「{keyword}」写入 {written} 条（累计 {total_written}）",
-                log_line=f"[{idx}/{kw_total}] 「{keyword}」→ {written} 条",
+                detail=f"「{keyword}」写入 {written} 条（累计 {total_written}）{skip_note}",
+                log_line=f"[{idx}/{kw_total}] 「{keyword}」→ {written} 条{skip_note}",
             )
             if not written:
                 _set_progress(
@@ -774,6 +851,16 @@ def _run_batch(
                         f"{result.get('error') or '空'}"
                     )
                 )
+
+        if _should_stop():
+            _set_progress(
+                running=False,
+                phase="done",
+                phase_label="已停止",
+                detail=f"已停止；累计写入 {total_written} 条",
+                log_line=f"用户停止批量任务，累计 {total_written} 条",
+            )
+            return
 
         if auto_tag and total_written > 0:
             _set_progress(
@@ -864,6 +951,23 @@ def api_baidu_batch():
 def api_job():
     with _job_lock:
         return jsonify(_job)
+
+
+@app.post("/api/job/stop")
+def api_job_stop():
+    """停止批量搜索 / 打标（当前词或当前条结束后生效）。"""
+    if not _request_stop():
+        return jsonify({"ok": False, "error": "当前没有运行中的任务"}), 400
+    _set_progress(
+        detail="正在停止…等当前词/条结束后退出",
+        log_line="收到停止请求",
+    )
+    return jsonify(
+        {
+            "ok": True,
+            "message": "已请求停止：当前关键词或打标条目结束后退出",
+        }
+    )
 
 
 @app.get("/api/errors")

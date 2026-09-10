@@ -507,6 +507,7 @@ def process_rows(
     fetch_landing: bool = True,
     max_scripts: int = MAX_SCRIPT_FETCH,
     on_done: Optional[Callable[[int, int, ProcessResult], None]] = None,
+    should_cancel: Optional[Callable[[], bool]] = None,
 ) -> list[ProcessResult]:
     """并发打标；按完成顺序回调 on_done(done, total, result)。"""
     total = len(rows)
@@ -534,7 +535,14 @@ def process_rows(
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futs = {pool.submit(work, row): row for row in rows}
         for fut in as_completed(futs):
-            r = fut.result()
+            if should_cancel and should_cancel():
+                for pending in futs:
+                    pending.cancel()
+                break
+            try:
+                r = fut.result()
+            except Exception:  # noqa: BLE001
+                continue
             results.append(r)
             done += 1
             if on_done:

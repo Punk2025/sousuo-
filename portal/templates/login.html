@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 · 心屿后台</title>
+  <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body class="login-body">
+  <form class="login-card" method="post" action="/admin/login">
+    <p class="logo">心屿</p>
+    <h1>内容后台</h1>
+    <p class="sub">管理 H5 导航入口与展示文案（本地演示）</p>
+    {% if error %}<p class="err">{{ error }}</p>{% endif %}
+    <label>密码
+      <input type="password" name="password" required autofocus placeholder="默认 admin123">
+    </label>
+    <button type="submit" class="btn primary">进入后台</button>
+    <p class="hint">前台预览：<a href="/nav/">/nav/</a> · <a href="/">内容站</a></p>
+  </form>
+</body>
+</html>

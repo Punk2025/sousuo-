@@ -110,5 +110,17 @@
   }
 
   $("btn-refresh").onclick = () => loadList().then(() => toast("已刷新"));
+
+  (function initBackTop() {
+    const btn = $("back-top");
+    if (!btn) return;
+    const toggle = () => {
+      btn.hidden = window.scrollY < 280;
+    };
+    window.addEventListener("scroll", toggle, { passive: true });
+    toggle();
+    btn.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  })();
+
   loadList();
 })();

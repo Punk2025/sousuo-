@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <title>{{ data.site.name or '心屿导航' }} · H5</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/nav/nav.css?v={{ ts }}">
+</head>
+<body>
+  <div class="phone">
+    <div class="statusbar" aria-hidden="true"></div>
+    <header class="header">
+      <div class="header-row">
+        <div class="brand"><i>导</i>{{ data.site.name or '心屿导航' }}</div>
+        <span class="badge">{{ data.site.badge or 'H5' }}</span>
+      </div>
+      <div class="search">
+        <input type="search" placeholder="{{ data.site.search_placeholder or '搜索' }}" aria-label="搜索">
+        <button type="button">搜索</button>
+      </div>
+    </header>
+
+    <section class="banner">
+      <h1>{{ data.banner.title or '' }}</h1>
+      <p>{{ data.banner.subtitle or '' }}</p>
+    </section>
+
+    {% if data.site.notice %}
+    <p class="notice">{{ data.site.notice }}</p>
+    {% endif %}
+
+    <section class="section">
+      <div class="section-h"><h2>常用入口</h2><span>宫格</span></div>
+      <div class="icons">
+        {% for it in data.icons %}
+        <a class="icon-item" href="{{ it.href }}"><span class="ico {{ it.color or 'c1' }}">{{ it.text or it.label[:1] }}</span><em>{{ it.label }}</em></a>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-h"><h2>热门推荐</h2><span>列表</span></div>
+      <div class="list">
+        {% for it in data.hot %}
+        <a href="{{ it.href }}">
+          <span class="rank {{ 'top' if it.top else '' }}">{{ loop.index }}</span>
+          <span class="txt"><strong>{{ it.title }}</strong><span>{{ it.desc }}</span></span>
+          <span class="go">›</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-h"><h2>快捷标签</h2><span>胶囊</span></div>
+      <div class="tags">
+        {% for it in data.tags %}
+        <a href="{{ it.href }}">{{ it.label }}</a>
+        {% endfor %}
+      </div>
+    </section>
+
+    <p class="bottom-tip">
+      {{ data.site.name or '心屿导航' }} · 后台可配置<br>
+      <a href="/">返回内容站</a>
+      ·
+      <a href="/admin/">管理后台</a>
+    </p>
+  </div>
+</body>
+</html>
