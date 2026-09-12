@@ -886,6 +886,61 @@ code {
   display: none !important;
 }
 
+.batch-open {
+  margin: 0.75rem 0 0.85rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 16px;
+  background: rgba(var(--accent-rgb), 0.06);
+  border: 1px dashed rgba(var(--accent-rgb), 0.28);
+}
+.batch-open-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.65rem;
+  align-items: center;
+}
+.batch-progress {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--ink);
+  min-width: 9rem;
+}
+.batch-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.batch-size select {
+  min-width: 4.2rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 10px;
+  border: 2px solid rgba(var(--accent-rgb), 0.3);
+  font: inherit;
+  font-weight: 700;
+}
+.batch-open .help {
+  margin: 0.55rem 0 0;
+}
+#table-rows tr.batch-on {
+  background: rgba(var(--accent-rgb), 0.1);
+  outline: 1px solid rgba(var(--accent-rgb), 0.22);
+}
+#table-rows tr.batch-on td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.col-check {
+  width: 2.2rem;
+  text-align: center;
+}
+.col-check input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--accent);
+}
+
 .hist-layout {
   display: grid;
   grid-template-columns: minmax(220px, 280px) 1fr;

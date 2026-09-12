@@ -183,10 +183,31 @@
         </div>
         <!-- 兼容旧 JS -->
         <strong id="s-total" hidden>0</strong>
+
+        <div class="batch-open" id="batch-open">
+          <div class="batch-open-row">
+            <span class="batch-progress" id="batch-progress">本组 — / —</span>
+            <label class="batch-size">每组
+              <select id="batch-size">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+              </select>
+            </label>
+            <button type="button" class="btn" id="btn-batch-prev" disabled>上一组</button>
+            <button type="button" class="btn primary" id="btn-batch-open" disabled>打开本组</button>
+            <button type="button" class="btn primary" id="btn-batch-next" disabled>下一组并打开</button>
+            <button type="button" class="btn" id="btn-open-selected" disabled>打开已选</button>
+          </div>
+          <p class="help">人工筛选用：默认每组 10 条，点「打开本组」在浏览器新标签打开；筛完再点「下一组并打开」。打开的是「最终链接」（没有则用入口链接）。</p>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
+                <th class="col-check"><input type="checkbox" id="check-all-export" title="全选/取消"></th>
                 <th>关键词</th>
                 <th>排名</th>
                 <th>名称</th>

@@ -4,6 +4,9 @@
   let pollTimer = null;
   let localProgressTimer = null;
   let lastActivityKey = "";
+  /** @type {{entry:string, final:string, open:string}[]} */
+  let exportLinks = [];
+  let batchCursor = 0;
 
   function nowTime() {
     return new Date().toLocaleTimeString("zh-CN", { hour12: false });
@@ -307,7 +310,7 @@
   function clearWorkspaceUI(msg) {
     $("csv-text").value = "keyword,rank,url,title,fetched_at\n";
     $("table-rows").innerHTML =
-      `<tr><td colspan="7" class="muted">${esc(msg || "新搜索进行中，上次结果已进「搜索记录」")}</td></tr>`;
+      `<tr><td colspan="8" class="muted">${esc(msg || "新搜索进行中，上次结果已进「搜索记录」")}</td></tr>`;
     $("rows").innerHTML =
       `<tr><td colspan="7" class="muted">${esc(msg || "等待本次搜索结果…")}</td></tr>`;
     if ($("s-report")) $("s-report").textContent = "0";
@@ -315,7 +318,86 @@
     $("s-jump").textContent = "0";
     $("s-adult").textContent = "0";
     $("s-gamble").textContent = "0";
+    exportLinks = [];
+    batchCursor = 0;
+    updateBatchUI();
     setBanner("export-banner", msg || "工作区已清空，等待新报表…", "warn");
+  }
+
+  function batchSize() {
+    return Math.min(20, Math.max(5, Number($("batch-size")?.value || 10)));
+  }
+
+  function batchRange() {
+    const n = exportLinks.length;
+    if (!n) return { start: 0, end: 0, total: 0 };
+    const size = batchSize();
+    const start = Math.min(batchCursor, Math.max(0, n - 1));
+    const end = Math.min(n, start + size);
+    return { start, end, total: n };
+  }
+
+  function updateBatchUI() {
+    const { start, end, total } = batchRange();
+    const prog = $("batch-progress");
+    const has = total > 0;
+    if (prog) {
+      prog.textContent = has
+        ? `本组 ${start + 1}–${end} / ${total}`
+        : "本组 — / —";
+    }
+    if ($("btn-batch-open")) $("btn-batch-open").disabled = !has;
+    if ($("btn-batch-prev")) $("btn-batch-prev").disabled = !has || start <= 0;
+    if ($("btn-batch-next")) {
+      $("btn-batch-next").disabled = !has || end >= total;
+    }
+    syncOpenSelectedBtn();
+    highlightBatchRows();
+  }
+
+  function syncOpenSelectedBtn() {
+    const btn = $("btn-open-selected");
+    if (!btn) return;
+    const n = document.querySelectorAll("#table-rows .row-check:checked").length;
+    btn.disabled = n === 0;
+    btn.textContent = n ? `打开已选（${n}）` : "打开已选";
+  }
+
+  function highlightBatchRows() {
+    const { start, end } = batchRange();
+    document.querySelectorAll("#table-rows tr[data-idx]").forEach((tr) => {
+      const i = Number(tr.dataset.idx);
+      tr.classList.toggle("batch-on", i >= start && i < end);
+    });
+  }
+
+  /** @param {string[]} urls */
+  function openUrlBatch(urls) {
+    const list = urls.map((u) => (u || "").trim()).filter(Boolean);
+    if (!list.length) {
+      toast("没有可打开的链接", "warn");
+      return 0;
+    }
+    // 同一用户手势下错开打开，降低弹窗拦截概率
+    list.forEach((url, i) => {
+      setTimeout(() => {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }, i * 180);
+    });
+    return list.length;
+  }
+
+  function openCurrentBatch() {
+    const { start, end, total } = batchRange();
+    if (!total || start >= end) {
+      toast("没有本组链接", "warn");
+      return;
+    }
+    const urls = exportLinks.slice(start, end).map((r) => r.open);
+    const n = openUrlBatch(urls);
+    toast(`正在打开本组 ${n} 个标签（${start + 1}–${end}）`, "ok");
+    pushActivity(`打开报表链接 ${start + 1}–${end}（共 ${n} 个）`, "ok");
+    highlightBatchRows();
   }
 
   async function loadExportTable() {
@@ -323,17 +405,36 @@
     const tb = $("table-rows");
     const n = data.rows?.length || 0;
     if ($("s-report")) $("s-report").textContent = String(n);
+    if ($("check-all-export")) $("check-all-export").checked = false;
     if (!n) {
-      tb.innerHTML = `<tr><td colspan="7" class="muted">暂无表格数据：先搜索出报表</td></tr>`;
+      exportLinks = [];
+      batchCursor = 0;
+      tb.innerHTML = `<tr><td colspan="8" class="muted">暂无表格数据：先搜索出报表</td></tr>`;
       setBanner("export-banner", "尚无报表。完成搜索后这里会显示可导出表格。", "idle");
+      updateBatchUI();
       return;
     }
-    setBanner("export-banner", `当前报表 ${n} 条，可导出 HTML / CSV。`, "ok");
+    setBanner(
+      "export-banner",
+      `当前报表 ${n} 条。可用下方「打开本组 / 下一组」批量打开链接人工筛选。`,
+      "ok",
+    );
+    exportLinks = data.rows.map((r) => {
+      const entry = (r["入口链接"] || "").trim();
+      const finalu = (r["最终链接"] || "").trim();
+      return {
+        entry,
+        final: finalu,
+        open: finalu || entry,
+      };
+    });
+    if (batchCursor >= n) batchCursor = 0;
     tb.innerHTML = data.rows
-      .map((r) => {
+      .map((r, idx) => {
         const entry = r["入口链接"] || "";
         const finalu = r["最终链接"] || "";
-        return `<tr>
+        return `<tr data-idx="${idx}">
+          <td class="col-check"><input type="checkbox" class="row-check" data-idx="${idx}"></td>
           <td>${esc(r["关键词"])}</td>
           <td>${esc(r["排名"])}</td>
           <td>${esc(r["名称"])}</td>
@@ -344,6 +445,10 @@
         </tr>`;
       })
       .join("");
+    tb.querySelectorAll(".row-check").forEach((el) => {
+      el.addEventListener("change", syncOpenSelectedBtn);
+    });
+    updateBatchUI();
   }
 
   async function loadResults() {
@@ -689,6 +794,46 @@
       toast("表格已刷新", "ok");
       pushActivity("表格已刷新", "ok");
     });
+
+  $("batch-size").onchange = () => {
+    batchCursor = 0;
+    updateBatchUI();
+  };
+  $("btn-batch-open").onclick = () => openCurrentBatch();
+  $("btn-batch-prev").onclick = () => {
+    const size = batchSize();
+    batchCursor = Math.max(0, batchCursor - size);
+    updateBatchUI();
+    openCurrentBatch();
+  };
+  $("btn-batch-next").onclick = () => {
+    const { end, total } = batchRange();
+    if (end >= total) {
+      toast("已经是最后一组", "warn");
+      return;
+    }
+    batchCursor = end;
+    updateBatchUI();
+    openCurrentBatch();
+  };
+  $("btn-open-selected").onclick = () => {
+    const idxs = [...document.querySelectorAll("#table-rows .row-check:checked")].map(
+      (el) => Number(el.dataset.idx),
+    );
+    const urls = idxs.map((i) => exportLinks[i]?.open).filter(Boolean);
+    const n = openUrlBatch(urls);
+    if (n) {
+      toast(`正在打开已选 ${n} 个标签`, "ok");
+      pushActivity(`打开已选链接 ${n} 个`, "ok");
+    }
+  };
+  $("check-all-export").onchange = () => {
+    const on = $("check-all-export").checked;
+    document.querySelectorAll("#table-rows .row-check").forEach((el) => {
+      el.checked = on;
+    });
+    syncOpenSelectedBtn();
+  };
 
   $("btn-refresh").onclick = () =>
     refreshAll().then(() => {
