@@ -1,0 +1,52 @@
+SearchPipe · 终端指令包（不用双击 .command）
+============================================
+
+从 Telegram / 网盘下载后，macOS 常提示「已损坏」——用终端即可，不要点「移到废纸篓」。
+
+
+【A】已解压便携包 / 已有项目文件夹
+--------------------------------
+打开「终端」，粘贴下面整段（路径按你的实际位置改）：
+
+cd ~/Desktop/SearchPipe-便携包 && bash mac/终端一键.sh
+
+常见路径例子：
+  cd ~/Downloads/SearchPipe-便携包 && bash mac/终端一键.sh
+  cd ~/Desktop/搜索网 && bash mac/终端一键.sh
+
+脚本会自动：清隔离标记 →（缺则）安装 → 启动后台。
+面板：http://127.0.0.1:8878/admin/
+停止：终端里按 Ctrl+C
+
+
+【B】新电脑有网、一个文件都没有（从 GitHub 装）
+--------------------------------
+终端粘贴：
+
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Punk2025/sousuo-/main/mac/bootstrap.sh)"
+
+装完再启动：
+
+cd ~/SearchPipe && bash mac/终端一键.sh
+
+
+【C】只要启动（已经装过）
+--------------------------------
+cd ~/Desktop/SearchPipe-便携包 && ./pipeline/start.sh
+
+或：
+
+cd ~/Desktop/搜索网 && ./pipeline/start.sh
+
+
+【D】只清「已损坏」标记、不启动
+--------------------------------
+cd ~/Desktop/SearchPipe-便携包 && xattr -cr . && chmod +x mac/*.sh pipeline/*.sh *.command
+
+
+【E】停止服务
+--------------------------------
+在跑着 start 的终端窗口按 Ctrl+C
+
+若找不到窗口，可强制结束 8878：
+lsof -tiTCP:8878 -sTCP:LISTEN | xargs kill

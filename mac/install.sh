@@ -103,11 +103,18 @@ exec ./pipeline/start.sh
 LAUNCHER_EOF
   chmod +x "$LAUNCHER"
 
-  # 桌面快捷方式
+  # 桌面快捷方式（清隔离，减少「已损坏」误报）
   local desk="$HOME/Desktop/SearchPipe.command"
   cp "$LAUNCHER" "$desk"
   chmod +x "$desk"
+  xattr -c "$desk" "$LAUNCHER" 2>/dev/null || true
   say "  已创建桌面快捷方式：~/Desktop/SearchPipe.command"
+  say "  若双击仍被拦，请用终端：bash mac/终端一键.sh"
+}
+
+# 非交互安装时不要卡在「是否启动」
+_noninteractive() {
+  [[ "${SEARCHPIPE_NONINTERACTIVE:-}" == "1" ]] || [[ ! -t 0 ]]
 }
 
 # ── 主流程 ────────────────────────────────────────────
@@ -158,15 +165,21 @@ say "  项目内启动器：$LAUNCHER"
 say ""
 say "✅ 安装完成！"
 say ""
+say "下次启动（推荐终端，避免「已损坏」拦截）："
+say "  cd \"$REPO\" && bash mac/终端一键.sh"
+say "  或：cd \"$REPO\" && ./pipeline/start.sh"
+say ""
+
+if _noninteractive; then
+  say "  （非交互模式：不自动弹出启动确认）"
+  exit 0
+fi
+
 read -r -p "是否现在启动控制面板？[Y/n] " ans
 ans="${ans:-Y}"
 if [[ "$ans" =~ ^[Yy]$ ]]; then
   exec "$LAUNCHER"
 else
-  say ""
-  say "下次启动方式："
-  say "  · 双击桌面「SearchPipe.command」"
-  say "  · 或双击「启动SearchPipe.command」"
   say ""
   read -r -p "按回车关闭此窗口…" _
 fi
