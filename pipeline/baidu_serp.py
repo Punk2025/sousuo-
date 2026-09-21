@@ -21,6 +21,16 @@ def _force_local_browsers_path() -> str:
     )
     if home.exists() and (sandboxish or not Path(current).exists()):
         os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(home)
+
+    # macOS 26+ 上 Playwright 用 os.cpus() 判 Apple Silicon；cpus 为空时会误判成
+    # mac-x64，去找不存在的 chrome-mac-x64。用机器架构强制 arm64。
+    if (
+        platform.system() == "Darwin"
+        and platform.machine() == "arm64"
+        and not os.environ.get("PLAYWRIGHT_HOST_PLATFORM_OVERRIDE")
+    ):
+        os.environ["PLAYWRIGHT_HOST_PLATFORM_OVERRIDE"] = "mac15-arm64"
+
     return os.environ.get("PLAYWRIGHT_BROWSERS_PATH", str(home))
 
 

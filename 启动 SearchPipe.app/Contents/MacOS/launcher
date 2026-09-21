@@ -1,0 +1,10 @@
+#!/bin/bash
+# 定位 .app 所在项目目录，在 Terminal 中启动 SearchPipe
+APP_PATH="$(cd "$(dirname "$0")/../.." && pwd)"
+PROJECT_ROOT="$(cd "$APP_PATH/.." && pwd)"
+osascript <<APPLESCRIPT
+tell application "Terminal"
+  activate
+  do script "cd $(printf %q "$PROJECT_ROOT") && chmod +x ./pipeline/start.sh ./启动SearchPipe.command 2>/dev/null; exec ./启动SearchPipe.command"
+end tell
+APPLESCRIPT

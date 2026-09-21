@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/admin.css">
+  <link rel="stylesheet" href="/static/admin.css?v={{ asset_v }}">
 </head>
 <body class="theme-apple">
   <div class="app">
@@ -197,10 +197,12 @@
             </label>
             <button type="button" class="btn" id="btn-batch-prev" disabled>上一组</button>
             <button type="button" class="btn primary" id="btn-batch-open" disabled>打开本组</button>
+            <button type="button" class="btn primary" id="btn-batch-mobile" disabled>手机模拟打开</button>
             <button type="button" class="btn primary" id="btn-batch-next" disabled>下一组并打开</button>
             <button type="button" class="btn" id="btn-open-selected" disabled>打开已选</button>
+            <button type="button" class="btn" id="btn-mobile-close" title="关闭手机模拟浏览器">关闭手机窗</button>
           </div>
-          <p class="help">人工筛选用：默认每组 10 条，点「打开本组」在浏览器新标签打开；筛完再点「下一组并打开」。打开的是「最终链接」（没有则用入口链接）。</p>
+          <p class="help">人工筛选用：默认每组 10 条。「打开本组」用普通新标签；「手机模拟打开」会弹出 Playwright 窗口，按 iPhone 视口+手机 UA 打开本组链接（效果接近 Chrome 手机模式）。打开的是「最终链接」（没有则用入口链接）。</p>
         </div>
 
         <div class="table-wrap">
@@ -299,6 +301,6 @@
   <!-- 兼容旧 toast id -->
   <div class="toast" id="toast" hidden></div>
   <button type="button" class="back-top" id="back-top" hidden aria-label="返回顶部" title="返回顶部">↑</button>
-  <script src="/static/admin.js"></script>
+  <script src="/static/admin.js?v={{ asset_v }}"></script>
 </body>
 </html>

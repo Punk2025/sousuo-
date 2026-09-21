@@ -14,6 +14,7 @@ from urllib.parse import quote, urlparse
 from flask import Flask, Response, jsonify, redirect, render_template, request
 
 import baidu_serp
+import mobile_preview
 import phase_b_process as pipeline
 import report_table
 import search_history
@@ -165,6 +166,17 @@ def _prepare_new_search(title: str = "") -> dict | None:
     return archived
 
 
+def _asset_ver(*names: str) -> str:
+    """静态资源版本号，避免浏览器缓存旧 JS/CSS。"""
+    latest = 0
+    static = Path(__file__).resolve().parent / "static"
+    for name in names:
+        p = static / name
+        if p.exists():
+            latest = max(latest, int(p.stat().st_mtime))
+    return str(latest or 1)
+
+
 @app.get("/")
 def home():
     return redirect("/admin/")
@@ -173,12 +185,14 @@ def home():
 @app.get("/admin/")
 def admin():
     ensure_working_csv()
-    return render_template("admin.html")
+    return render_template("admin.html", asset_v=_asset_ver("admin.js", "admin.css"))
 
 
 @app.get("/admin/history/")
 def admin_history():
-    return render_template("history.html")
+    return render_template(
+        "history.html", asset_v=_asset_ver("admin.js", "admin.css")
+    )
 
 
 @app.get("/api/stats")
@@ -945,6 +959,26 @@ def api_baidu_batch():
             "archived": archived,
         }
     )
+
+
+@app.post("/api/open-mobile")
+def api_open_mobile():
+    """用 Playwright iPhone 设备模拟打开一组链接（筛站用）。"""
+    body = request.get_json(force=True, silent=True) or {}
+    urls = body.get("urls") or []
+    if not isinstance(urls, list):
+        return jsonify({"ok": False, "error": "urls 须为数组"}), 400
+    # 防止一次开太多拖垮机器
+    urls = [str(u) for u in urls][:20]
+    result = mobile_preview.open_urls_mobile(urls)
+    status = 200 if result.get("ok") else 500
+    return jsonify(result), status
+
+
+@app.post("/api/open-mobile/close")
+def api_open_mobile_close():
+    """关闭手机模拟浏览器窗口。"""
+    return jsonify(mobile_preview.close_mobile_preview())
 
 
 @app.get("/api/job")

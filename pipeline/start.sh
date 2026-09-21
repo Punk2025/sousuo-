@@ -8,6 +8,10 @@ cd "$ROOT"
 case "$(uname -s)" in
   Darwin)
     export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/Library/Caches/ms-playwright}"
+    # macOS 26+：Playwright 可能把 Apple Silicon 误判成 x64，强制 arm64 浏览器路径
+    if [ "$(uname -m)" = "arm64" ] && [ -z "${PLAYWRIGHT_HOST_PLATFORM_OVERRIDE:-}" ]; then
+      export PLAYWRIGHT_HOST_PLATFORM_OVERRIDE="mac15-arm64"
+    fi
     ;;
   *)
     export PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}"

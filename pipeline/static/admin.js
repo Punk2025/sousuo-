@@ -347,6 +347,7 @@
         : "本组 — / —";
     }
     if ($("btn-batch-open")) $("btn-batch-open").disabled = !has;
+    if ($("btn-batch-mobile")) $("btn-batch-mobile").disabled = !has;
     if ($("btn-batch-prev")) $("btn-batch-prev").disabled = !has || start <= 0;
     if ($("btn-batch-next")) {
       $("btn-batch-next").disabled = !has || end >= total;
@@ -384,7 +385,40 @@
         window.open(url, "_blank", "noopener,noreferrer");
       }, i * 180);
     });
+    toast(`正在打开 ${list.length} 个标签`, "ok");
     return list.length;
+  }
+
+  async function openUrlsMobile(urls) {
+    const list = (urls || []).map((u) => (u || "").trim()).filter(Boolean);
+    if (!list.length) {
+      toast("没有可打开的链接", "warn");
+      return;
+    }
+    toast(`正在手机模拟打开 ${list.length} 个…`, "ok");
+    try {
+      const res = await fetch("/api/open-mobile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ urls: list }),
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        toast(data.error || "手机模拟打开失败", "err");
+        pushActivity(`手机模拟失败：${data.error || "unknown"}`, "err");
+        return;
+      }
+      const extra = (data.errors || []).length
+        ? `，失败 ${(data.errors || []).length} 个`
+        : "";
+      toast(`手机模拟已打开 ${data.opened}/${data.total || list.length}${extra}`, "ok");
+      pushActivity(
+        `手机模拟打开 ${data.opened} 个（共 ${data.total || list.length}）`,
+        "ok",
+      );
+    } catch (e) {
+      toast(`手机模拟请求失败：${e}`, "err");
+    }
   }
 
   function openCurrentBatch() {
@@ -395,8 +429,20 @@
     }
     const urls = exportLinks.slice(start, end).map((r) => r.open);
     const n = openUrlBatch(urls);
-    toast(`正在打开本组 ${n} 个标签（${start + 1}–${end}）`, "ok");
-    pushActivity(`打开报表链接 ${start + 1}–${end}（共 ${n} 个）`, "ok");
+    if (n) {
+      pushActivity(`打开报表链接 ${start + 1}–${end}（共 ${n} 个）`, "ok");
+    }
+    highlightBatchRows();
+  }
+
+  function openCurrentBatchMobile() {
+    const { start, end, total } = batchRange();
+    if (!total || start >= end) {
+      toast("没有本组链接", "warn");
+      return;
+    }
+    const urls = exportLinks.slice(start, end).map((r) => r.open);
+    openUrlsMobile(urls);
     highlightBatchRows();
   }
 
@@ -800,6 +846,15 @@
     updateBatchUI();
   };
   $("btn-batch-open").onclick = () => openCurrentBatch();
+  $("btn-batch-mobile").onclick = () => openCurrentBatchMobile();
+  $("btn-mobile-close").onclick = async () => {
+    try {
+      await fetch("/api/open-mobile/close", { method: "POST" });
+      toast("已关闭手机模拟窗口", "ok");
+    } catch (e) {
+      toast(`关闭失败：${e}`, "err");
+    }
+  };
   $("btn-batch-prev").onclick = () => {
     const size = batchSize();
     batchCursor = Math.max(0, batchCursor - size);
